@@ -54,6 +54,12 @@
       
         $.post('/sign_in', hash)
         .then((response)=>{
+
+            //sessionId不通过cookie，将它存到 localStorage
+            
+            //let object = JSON.parse(response)
+            // localStorage.setItem('sessionId',object.sessionId)
+            // window.location.href = `/?sessionId=${object.sessionId}`
             window.location.href = '/'
         }, (request)=>{
             alert('登录失败，邮箱与密码不匹配')

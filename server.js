@@ -4,6 +4,10 @@ var url = require('url')
 
 var port = process.env.PORT || 8888;
 
+let sessions = {
+
+}
+
 
 var server = http.createServer(function (request, response) {
   var temp = url.parse(request.url, true)
@@ -16,7 +20,10 @@ var server = http.createServer(function (request, response) {
 
   if (path === '/') {
     var string = fs.readFileSync('./index.html', 'utf8')
-    let cookies = request.headers.cookie.split('; ')//['email=1@', 'a=1','b=2']
+    let cookies = ''
+    if(request.headers.cookie){
+      cookies = request.headers.cookie.split('; ')//['email=1@', 'a=1','b=2']
+    }
     let hash = {}
     for(let i = 0;i<cookies.length;i++){
       let parts = cookies[i].split('=')
@@ -24,7 +31,12 @@ var server = http.createServer(function (request, response) {
       let value = parts[1]
       hash[key] = value
     }
-    let email = hash.sign_in_email
+    //let mySession = sessions[query.sessionId] //不通过cookie
+    let mySession = sessions[hash.sessionId]
+    let email
+    if(mySession){
+      email = mySession.sign_in_email
+    }
     let users = fs.readFileSync('./db/users','utf8')
     users = JSON.parse(users)
     let foundUser
@@ -108,7 +120,7 @@ var server = http.createServer(function (request, response) {
     response.setHeader('Content-Type', 'text/html;charset=utf-8')
     response.write(string)
     response.end()
-  }else if(path === '/sign_in' && method === 'POST'){ //GET  /POST  /DELETE
+  }else if(path === '/sign_in' && method === 'POST'){//登录
     readBody(request).then((body)=>{
       let strings = body.split('&') // ['email=1', 'password=2', 'password_confirmation=3']
       let hash = {}
@@ -124,7 +136,7 @@ var server = http.createServer(function (request, response) {
       console.log(email)
       console.log('password')
       console.log(password)
-      var users = fs.readFileSync('./db/users','utf8') //加入数据库
+      var users = fs.readFileSync('./db/users','utf8') 
         try{
           users = JSON.parse(users)
         }catch(exception){
@@ -139,7 +151,10 @@ var server = http.createServer(function (request, response) {
       }
       if(found){
         //Set-Cookie: <cookie-name>=<cookie-value> 
-        response.setHeader('Set-Cookie', `sign_in_email=${email}; HttpOnly`)//加入httpOnly，JS无法修改cookie
+        let sessionId = Math.random() * 100000
+        sessions[sessionId] = {sign_in_email: email}
+        response.setHeader('Set-Cookie', `sessionId=${sessionId}; HttpOnly`)//加入httpOnly，JS无法修改cookie
+        // response.setHeader(`{"sessionId":${sessionId}}`) //不通过上面的cookie，sessionId通过session传给前端通过localStorage也可以实现
         response.statusCode = 200
       }else{
         response.statusCode = 401
