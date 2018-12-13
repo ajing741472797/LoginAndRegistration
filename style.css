@@ -1,0 +1,33 @@
+body{
+    border: 1px solid red;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+.form-wrapper{
+    padding: 20px;
+    border: 1px solid #ddd;
+    min-width: 350px;
+}
+.form-wrapper .row{
+    margin: 10px 0;
+}
+.form-wrapper .row>label{
+    display: inline-block;
+    min-width: 4em;
+   
+}
+h1{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.submit{
+    display: block;
+    margin: 20px auto;
+    padding: 5px 10px;
+}
